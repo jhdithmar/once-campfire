@@ -92,8 +92,5 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # SQLite is good, actually
-  config.active_record.sqlite3_production_warning = false
-
   config.active_job.queue_adapter = :resque
 end
