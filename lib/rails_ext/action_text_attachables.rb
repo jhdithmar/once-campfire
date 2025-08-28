@@ -16,10 +16,8 @@ ActiveSupport.on_load(:action_text_content) do
 
             decoded_gid = if data = encoded_message.dig("_rails", "data")
               data
-            elsif message = encoded_message.dig("_rails", "message")
-              Marshal.load Base64.urlsafe_decode64(message)
             else
-              raise ArgumentError, "Unknown message format"
+              nil
             end
 
             model = GlobalID.find(decoded_gid)
