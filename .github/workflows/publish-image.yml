@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - urlencoded-message-handling-for-bots
     tags:
       - 'v*'
   pull_request:

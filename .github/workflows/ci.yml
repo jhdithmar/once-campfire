@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, urlencoded-message-handling-for-bots ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, urlencoded-message-handling-for-bots ]
 
 jobs:
   scan:
