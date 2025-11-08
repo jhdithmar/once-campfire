@@ -5,6 +5,7 @@ on:
     branches: [ main, urlencoded-message-handling-for-bots ]
   pull_request:
     branches: [ main, urlencoded-message-handling-for-bots ]
+  workflow_dispatch:
 
 jobs:
   scan:
