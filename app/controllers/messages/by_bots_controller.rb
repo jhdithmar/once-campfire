@@ -58,8 +58,9 @@ class Messages::ByBotsController < MessagesController
       if params[:attachment]
         params.permit(:attachment)
       else
-        reading(request.body) { |body| { body: request.content_type == "application/x-www-form-urlencoded" ? CGI.unescape(body) : body } }
-	# original
+        body = raw_request_body
+        { body: request.media_type == "application/x-www-form-urlencoded" ? CGI.unescape(body) : body }
+        # original
         # { body: raw_request_body }
       end
     end
