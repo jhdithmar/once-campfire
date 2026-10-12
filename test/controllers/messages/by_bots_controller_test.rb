@@ -25,7 +25,7 @@ class Messages::ByBotsControllerTest < ActionDispatch::IntegrationTest
   test "create with URL-encoded body" do
     assert_difference -> { Message.count }, +1 do
       post room_bot_messages_url(@room, users(:bender).bot_key),
-        params: "Hello+Bot+World%21",
+        params: +"Hello+Bot+World%21",
         headers: { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
       assert_equal "Hello Bot World!", Message.last.plain_text_body
     end
