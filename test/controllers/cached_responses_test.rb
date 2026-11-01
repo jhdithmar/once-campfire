@@ -26,6 +26,18 @@ class CachedResponsesTest < ActionDispatch::IntegrationTest
     ActionController::Base.perform_caching = @previous_caching
   end
 
+  test "a reused page carries the same enforcing policy, with no nonce" do
+    get room_messages_url(@room)
+    first = response.headers["Content-Security-Policy"]
+    assert_match %r{script-src [^/ ]+/assets/ 'sha256-}, first
+    assert_no_match "nonce-", first
+
+    MessagesController.any_instance.expects(:find_paged_messages).never
+    get room_messages_url(@room)
+    assert_response :success
+    assert_equal first, response.headers["Content-Security-Policy"]
+  end
+
   test "all four read actions reuse completed pages" do
     urls = [ room_url(@room), room_messages_url(@room), user_sidebar_url(:me), searches_url(q: "hello") ]
     urls.each do |url|
@@ -122,6 +134,29 @@ class CachedResponsesTest < ActionDispatch::IntegrationTest
     foreign_write("DELETE FROM sessions WHERE user_id = ?", users(:david).id)
     get user_sidebar_url(:me)
     assert_redirected_to new_session_url
+  end
+
+  test "a session signed out by a password change isn't served from a cached snapshot or page" do
+    other_device = open_session { |session| session.host! "once.campfire.test" }
+    other_device.post session_url, params: { email_address: users(:david).email_address, password: "secret123456" }
+    other_device.get user_sidebar_url(:me)
+    other_device.assert_response :success
+
+    Session.expects(:find_by).never
+    ResponseCache.instance.expects(:write).never
+    other_device.get user_sidebar_url(:me)
+    other_device.assert_response :success
+    Session.unstub(:find_by)
+    ResponseCache.instance.unstub(:write)
+
+    put user_profile_url, params: { user: { password: "a new secret123456", password_challenge: "secret123456" } },
+      headers: { "Sec-Fetch-Site" => "same-origin", "Origin" => "http://once.campfire.test" }
+    assert_redirected_to user_profile_url
+
+    other_device.get user_sidebar_url(:me)
+    other_device.assert_redirected_to new_session_url
+    get user_sidebar_url(:me)
+    assert_response :success
   end
 
   test "conditional requests keep native validators" do
